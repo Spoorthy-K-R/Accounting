@@ -8,9 +8,9 @@ import string
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize
 
-nltk.download('punkt')
-nltk.download('stopwords')
-
+# nltk.download('punkt')
+# nltk.download('stopwords')
+print('started')
 # finance_keywords = [ ... ]  # your list
 lm_dict = pd.read_csv('Loughran-McDonald_MasterDictionary_1993-2024.csv')
 
@@ -23,6 +23,8 @@ uncertainty_words = set(lm_dict[lm_dict['Uncertainty'] > 0]['Word'].str.lower())
 # 3. Combine or use separately
 finance_words = positive_words | negative_words | uncertainty_words  # union of sets
 
+print('\n\n finance words')
+print(finance_words)
 
 stop_words = set(stopwords.words('english'))
 
@@ -30,6 +32,8 @@ stop_words = set(stopwords.words('english'))
 company_df = pd.read_csv('sp100_list.csv', dtype=str)
 # Assume columns: 'CIK', 'Company Name'
 cik_to_company = dict(zip(company_df['cik'].str.zfill(10), company_df['conm']))
+
+print(f'\n\n companies {cik_to_company}')
 
 def preprocess(sentence):
     sentence = sentence.lower()
@@ -46,12 +50,17 @@ results = []
 
 for fname in os.listdir('/Users/spoorthy/Projects/Accounting/10K'):
     if fname.endswith('.txt'):
+        print(f'parsing file {fname}')
         cik = fname.split('-')[0].zfill(10)  # Extract and pad CIK
         company = cik_to_company.get(cik, 'Unknown')
-        with open(os.path.join('10K', fname), 'r', encoding='utf-8', errors='ignore') as f:
+        print(f'\n\ncompany {company}')
+        with open(os.path.join('/Users/spoorthy/Projects/Accounting/10K/', fname), 'r', encoding='utf-8', errors='ignore') as f:
+            print(f'\n\nparsing file {fname}')
             text = f.read()
             sentences = sent_tokenize(text)
+            print('\n\ntokenised sentences')
             for sent in sentences:
+                print(f'\nparsing sent')
                 found = [kw for kw in finance_words if kw in sent.lower()]
                 if len(found)>0:
                     cleaned = preprocess(sent)
@@ -64,6 +73,7 @@ for fname in os.listdir('/Users/spoorthy/Projects/Accounting/10K'):
                     })
 
 df = pd.DataFrame(results)
+# print(f'\n\n result records is {df}')
 
 # 5. Store grouped by company (CSV)
 df.to_csv('finance_sentences_by_company.csv', index=False)

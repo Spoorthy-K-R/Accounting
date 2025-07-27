@@ -22,7 +22,7 @@ income_text = df_income.to_string(index=False)
 
 prompt_template = (
     """
-    You are a financial analyst. Given the following financial statement tables for a company, summarize the overall trends in revenue, profit, margins, debt, cash flow, and capital structure. 
+    As a financial analyst, given the following financial statement tables for a company, summarize the overall trends in revenue, profit, margins, debt, cash flow, and capital structure. 
     
     Balance Sheet:
     {balance_text}
@@ -59,6 +59,7 @@ print(result['text'] if 'text' in result else result)
 
 file_name = balance_sheet_csv.split('/')
 year = file_name[-1].split('_')[1]
+
 
 out_file = f"/Users/spoorthy/Projects/Accounting/NVIDIA/output-txt/NVIDIA_{year}_analysis.txt"
 with open(out_file, "w", encoding="utf-8") as out:

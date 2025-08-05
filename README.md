@@ -1,66 +1,70 @@
-# Financial Statement Analysis and Insights Platform
+# Getting Started with Create React App
 
-## Overview
-This project automates the extraction, processing, and analysis of financial statements (10-Ks) from SEC EDGAR and Yahoo Finance for S&P 100 companies. It uses Python, NLP and large language models (LLMs) to generate financial insights, perform sentiment analysis on regulatory filings and identify key risks and opportunities for investors. (the NVIDIA folder is a sample analysis of NVIDIA financial data)
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Features
-- Download and parse 10-K filings from the SEC EDGAR database
-- Extract and structure financial tables (balance sheet, income statement, cash flow)
-- Download historical financial data from Yahoo Finance
-- Perform sentiment and keyword analysis on regulatory filings using the Loughran-McDonald financial dictionary
-- Summarize multi-year financial trends and generate qualitative valuation using LLMs (uses Gemini, via LangChain)
-- Output results as CSV, JSON and plain text summaries
+## Available Scripts
 
-## Project Structure
-```
-/Accounting
-├── extract_financials.py                # Extracts financial tables from 10-K filings
-├── sentiment_analysis_10k.py            # Performs sentiment/keyword analysis on 10-K text
-├── NVIDIA/
-│   ├── summarize_financials.py          # Summarizes a single year's financials of NVIDIA using LLM
-│   ├── summarise-all-years.py           # Summarizes multi-year financials of NVIDIA using LLM
-│   ├── output-csv/                      # Extracted financial tables (CSV) of NVIDIA
-│   ├── output-txt/                      # LLM-generated analysis (TXT) on the financials of NVIDIA
-│   └── 10K/                             # Downloaded 10-K filings of NVIDIA
-├── Code 1. Download EDGAR Index.ipynb   # Download SEC index files
-├── Code 2. Select 10-Ks.ipynb           # Select relevant 10-K filings
-├── Code 3. Download 10-Ks.ipynb         # Download 10-K filings
-├── Code 5. Obtain Financial Information from Yahoo Finance.ipynb # Download financials from Yahoo Finance
-├── sp100_list.csv                       # list of S&P 100 companies
-├── Loughran-McDonald_MasterDictionary_1993-2024.csv # Financial sentiment dictionary
-```
+In the project directory, you can run:
 
-## Installation
-- Clone the repository and navigate to the project directory.
-- Install all required Python packages using:
-  ```bash
-  pip install -r requirements.txt
-  ```
-- Download NLTK data (run once in Python):
-  ```python
-  import nltk
-  nltk.download('punkt')
-  nltk.download('stopwords')
-  ```
-- Obtain a Google Generative AI API key and set it as the `GOOGLE_API_KEY` environment variable for LLM-based scripts.
+### `npm start`
 
-## Usage
-- **Download SEC Index and 10-Ks:**
-  - Use the provided Jupyter notebooks to download and select 10-K filings for S&P 100 companies.
-- **Extract Financial Tables:**
-  - Run `extract_financials.py` to parse 10-K filings and extract financial tables to CSV.
-- **Sentiment Analysis:**
-  - Run `sentiment_analysis_10k.py` to extract finance-related sentences and perform sentiment/keyword analysis. Outputs are saved as CSV and JSON.
-- **Download Yahoo Finance Data:**
-  - Use `Code 5. Obtain Financial Information from Yahoo Finance.ipynb` to fetch historical prices and financials.
-- **Financial Analysis with LLMs:**
-  - Run `NVIDIA/summarize_financials.py` for single-year analysis or `NVIDIA/summarise-all-years.py` for multi-year trend analysis. Results are saved in `output-txt/`. (the NVIDIA folder is a sample analysis of NVIDIA financial data)
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-## Example Output
-Below is an excerpt from a 5-year LLM-generated analysis (see `NVIDIA/output-txt/NVIDIA_5yr_analysis.txt`):
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
 
-## Acknowledgments
-- SEC EDGAR for regulatory filings
-- Yahoo Finance for financial data
-- Loughran-McDonald for the financial sentiment dictionary
-- LangChain and Google Generative AI for LLM-based analysis 
+### `npm test`
+
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+### `npm run build`
+
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `npm run eject`
+
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
+
+### Code Splitting
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+
+### Analyzing the Bundle Size
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+
+### Making a Progressive Web App
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+
+### Advanced Configuration
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+
+### Deployment
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+
+### `npm run build` fails to minify
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

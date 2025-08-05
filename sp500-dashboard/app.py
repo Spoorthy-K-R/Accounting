@@ -19,7 +19,8 @@ def get_companies():
 def get_analysis(ticker):
     try:
         # Here, call your analysis functions (from your previous script)
-        plot_info = run_full_analysis(ticker)
+        cik = sp500.loc[sp500['tic']==ticker, 'cik']
+        plot_info = run_full_analysis(ticker, str(cik).split()[1])
 
         plots = [
             {

@@ -5,14 +5,16 @@ function App() {
   const [companies, setCompanies] = useState([]);
   const [selected, setSelected] = useState('');
   const [plots, setPlots] = useState([]);
+  const FLASK_BACKEND_URL = 'https://https://financial-data-analysis.onrender.com';
+
 
   useEffect(() => {
-    axios.get('/api/companies').then(res => setCompanies(res.data));
+    axios.get(`${FLASK_BACKEND_URL}/api/companies`).then(res => setCompanies(res.data));
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e) => { 
     setSelected(e.target.value);
-    axios.get(`/api/analysis/${e.target.value}`).then(res => setPlots(res.data.plots));
+    axios.get(`${FLASK_BACKEND_URL}/api/analysis/${e.target.value}`).then(res => setPlots(res.data.plots));
   };
 
   return (

@@ -2,11 +2,10 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from io import StringIO
 
-files = ["/Users/spoorthy/Projects/Accounting/NVIDIA/10K/0001045810-20-000010.txt",
-         "/Users/spoorthy/Projects/Accounting/NVIDIA/10K/0001045810-21-000010.txt",
-         "/Users/spoorthy/Projects/Accounting/NVIDIA/10K/0001045810-22-000036.txt",
+files = ["/Users/spoorthy/Projects/Accounting/NVIDIA/10K/0001045810-22-000036.txt",
          "/Users/spoorthy/Projects/Accounting/NVIDIA/10K/0001045810-23-000017.txt",
-         "/Users/spoorthy/Projects/Accounting/NVIDIA/10K/0001045810-24-000029.txt"]
+         "/Users/spoorthy/Projects/Accounting/NVIDIA/10K/0001045810-24-000029.txt",
+         "/Users/spoorthy/Projects/Accounting/NVIDIA/10K/0001045810-25-000023.txt"]
 
 section_headers = {
     'income_statement': [

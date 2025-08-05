@@ -8,7 +8,7 @@ import os
 api_key = os.getenv('GOOGLE_API_KEY')  # Or set your API key directly as a string
 
 # List of CSVs for each year
-years = ['20', '21', '22', '23', '24']
+years = ['22', '23', '24', '25']
 base_path = '/Users/spoorthy/Projects/Accounting/NVIDIA/output-csv/'
 
 balance_sheets = [f"{base_path}NVIDIA_{y}_balance_sheet.csv" for y in years]
@@ -35,15 +35,15 @@ income_text = df_income.to_string(index=False)
 
 prompt_template = (
     """
-    You are a financial analyst. Given the following 5-year financial statement tables for a company, perform a comprehensive analysis as follows:
+    You are a financial analyst. Given the following financial statement tables for a company, perform a comprehensive analysis as follows:
 
     Financial Trends Analysis:
     - Summarize overall trends in revenue, profit, margins, debt, cash flow, and capital structure. Think of common size analysis and key financial ratios from a Financial Statement Analysis (FSA) course.
-    - Identify any significant changes, anomalies, or turning points in the past 5 years.
+    - Identify any significant changes, anomalies, or turning points.
     - Spot potential red flags or opportunities (e.g., declining margins, rising leverage, growth acceleration).
 
     Insights and Explanations:
-    - Explain the key drivers behind major changes (e.g., "What might explain the drop in operating margin in 2022?").
+    - Explain the key drivers behind major changes
     - Interpret ratios or other computed metrics and provide context.
     - Assess risks and opportunities for investors.
 
@@ -52,15 +52,15 @@ prompt_template = (
     - Provide supporting rationale (growth, profitability, risks, industry context).
     - Optionally, attempt a rough DCF, multiples-based, or scenario valuation and discuss any limitations.
 
-    Here are the 5-year financial statements:
+    Here are the financial statements:
 
-    Balance Sheet (5 years):
+    Balance Sheet:
     {balance_text}
 
-    Cash Flow Statement (5 years):
+    Cash Flow Statement:
     {cash_text}
 
-    Income Statement (5 years):
+    Income Statement:
     {income_text}
 
     Please structure your response in three sections:
@@ -84,6 +84,6 @@ print("\n--- AI Summary ---\n")
 print(result['text'] if 'text' in result else result)
 
 # Save output
-out_file = f"/Users/spoorthy/Projects/Accounting/NVIDIA/output-txt/NVIDIA_5yr_analysis.txt"
+out_file = f"/Users/spoorthy/Projects/Accounting/NVIDIA/output-txt/NVIDIA_analysis-new.txt"
 with open(out_file, "w", encoding="utf-8") as out:
     out.write(result['text'] if 'text' in result else result)

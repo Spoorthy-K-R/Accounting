@@ -31,18 +31,18 @@ This project automates the extraction, processing, and analysis of financial sta
 ```
 
 ## Installation
-1. Clone the repository and navigate to the project directory.
-2. Install the required Python packages:
-   ```bash
-   pip install pandas beautifulsoup4 yfinance nltk langchain langchain-google-genai
-   ```
-3. Download NLTK data (run once in Python):
-   ```python
-   import nltk
-   nltk.download('punkt')
-   nltk.download('stopwords')
-   ```
-4. Obtain a Google Generative AI API key and set it as the `GOOGLE_API_KEY` environment variable for LLM-based scripts.
+- Clone the repository and navigate to the project directory.
+- Install all required Python packages using:
+  ```bash
+  pip install -r requirements.txt
+  ```
+- Download NLTK data (run once in Python):
+  ```python
+  import nltk
+  nltk.download('punkt')
+  nltk.download('stopwords')
+  ```
+- Obtain a Google Generative AI API key and set it as the `GOOGLE_API_KEY` environment variable for LLM-based scripts.
 
 ## Usage
 - **Download SEC Index and 10-Ks:**

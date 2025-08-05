@@ -2,8 +2,10 @@ from flask import Flask, jsonify, send_from_directory, request
 import pandas as pd
 import os
 from backend_analysis import run_full_analysis
+from flask_cors import CORS
 
 app = Flask(__name__, static_folder='static')
+CORS(app) # Enable CORS for all routes (or specify origins)
 
 # Load S&P 500 companies
 sp500 = pd.read_csv('sp100_list.csv')  # columns: Symbol, Name
@@ -15,19 +17,23 @@ def get_companies():
 
 @app.route('/api/analysis/<ticker>')
 def get_analysis(ticker):
-    print(ticker)
-    # Here, call your analysis functions (from your previous script)
-    plot_info = run_full_analysis(ticker)
+    try:
+        # Here, call your analysis functions (from your previous script)
+        plot_info = run_full_analysis(ticker)
 
-    plots = [
-        {
-            'title': os.path.splitext(filename)[0].replace(f'{ticker}_', '').replace('_', ' ').title(),
-            'url': f'/static/plots/{filename}',
-            'explanation': explanation
-        }
-        for filename, explanation in plot_info
-    ]
-    return jsonify({'plots': plots})
+        plots = [
+            {
+                'title': os.path.splitext(filename)[0].replace(f'{ticker}_', '').replace('_', ' ').title(),
+                'url': f'/static/plots/{filename}',
+                'explanation': explanation
+            }
+            for filename, explanation in plot_info
+        ]
+        return jsonify({'plots': plots})
+    except Exception as e:
+        # Log the error for debugging
+        app.logger.error(f"Error processing analysis for {ticker}: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/static/plots/<filename>')
 def serve_plot(filename):

@@ -5,8 +5,8 @@ function App() {
   const [companies, setCompanies] = useState([]);
   const [selected, setSelected] = useState('');
   const [plots, setPlots] = useState([]);
-  // const FLASK_BACKEND_URL = 'https://financial-data-analysis.onrender.com';
-  const FLASK_BACKEND_URL = 'http://localhost:5000';
+  const FLASK_BACKEND_URL = 'https://financial-data-analysis.onrender.com';
+  // const FLASK_BACKEND_URL = 'http://localhost:5000';
 
 
   useEffect(() => {

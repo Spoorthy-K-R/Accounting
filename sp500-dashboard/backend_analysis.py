@@ -317,7 +317,7 @@ def download_EDGAR(ticker, cik, root_path, target_directory):
     shutil.rmtree(folder_name, ignore_errors=True)
     os.makedirs(folder_name, exist_ok=True) 
     headers = {
-        'User-Agent': 'TestBot +spoo@test.ai' 
+        'User-Agent': 'Rutgers rv559@rutgers.edu' 
     }        
     for i, url in enumerate(url_10k, start=1):
         start_time = time.time()
@@ -358,8 +358,9 @@ def analyse_EDGAR(ticker, cik, root_path):
             with open(folder_name+'/'+input_file, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read(1000) # Read first 1000 chars
                 print(f"Content snippet from {folder_name+'/'+input_file}:\n{content[:500]}...") # Print first 500 chars
-                f.seek(0) # Reset file pointer to beginning for BeautifulSoup to read
+                f.seek(0)
                 soup = BeautifulSoup(f, 'lxml') 
+                print('soup done')
 
             for section, headers in section_headers.items():
                 found = False

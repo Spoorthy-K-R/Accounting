@@ -288,13 +288,13 @@ def extract_10k_urls(file_path):
 
 def download_EDGAR(ticker, cik, root_path, target_directory):
     session = setup_session()  
-    start_year = 2024 
+    start_year = 2022 
     end_year = 2025 
     base_url = "https://www.sec.gov/Archives/edgar/full-index/" 
     requests_per_minute = 10 
     os.makedirs(target_directory, exist_ok=True) 
     
-    download_and_unzip_forms(session, start_year, end_year, base_url, target_directory, requests_per_minute)
+    # download_and_unzip_forms(session, start_year, end_year, base_url, target_directory, requests_per_minute)
     form_types = ['10-K']
     cik_filled = str(cik).zfill(10)
     all_records = []
@@ -453,7 +453,7 @@ def analyse_EDGAR(ticker, cik, root_path):
 
 def run_full_analysis(ticker, cik, root_path, output_dir='static/plots'):
     STATIC_FOLDER_PATH = os.path.join(root_path, 'static')
-    INDEX_FILES_DIR = os.path.join(root_path, 'index_files')
+    INDEX_FILES_DIR = os.path.join(root_path, 'static', 'index_files')
     PLOTS_DIR = os.path.join(root_path, 'static', 'plots')
 
     os.makedirs(output_dir, exist_ok=True)

@@ -21,9 +21,6 @@ def get_analysis(ticker):
         cik = sp500.loc[sp500['tic']==ticker, 'cik']
         plot_info = run_full_analysis(ticker, str(cik).split()[1], app.root_path)
         analysis_key, analysis_text = plot_info.pop()
-        print(analysis_key)
-        print('plot_info')
-        print(plot_info)
 
         plots = [
             {
@@ -33,8 +30,6 @@ def get_analysis(ticker):
             }
             for filename, explanation in plot_info
         ]
-        print('json')
-        print(jsonify({'plots': plots, 'text': analysis_text}))
         return jsonify({'plots': plots, 'text': analysis_text})
     except Exception as e:
         app.logger.error(f"Error processing analysis for {ticker}: {e}")

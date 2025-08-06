@@ -89,7 +89,7 @@ def _get_llm_explanation(prompt_template_string, data_context, ticker, plot_type
     print(f"[CACHE SAVE] Saved {plot_type} explanation for {ticker} to cache.")
     return explanation
 
-def download_stock_data(ticker, period='1y'):
+def download_stock_data(ticker, period='2y'):
     """Download historical stock data for the given ticker."""
     stock = yf.Ticker(ticker)
     df = stock.history(period=period)
@@ -261,14 +261,14 @@ def parse_idx_file(file_path, form_types, cik):
         lines = file.readlines()
     data_start = next(i for i, line in enumerate(lines) if re.match(r'-{3,}', line)) + 1
     for line in lines[data_start:]:
-        parts = re.split(r'\s{2,}', line.strip())
-        if len(parts) == 5:
-            form_type, company_name, cik_in, date_filed, file_name = parts
-            if (cik==cik_in):
-                print('true')
-            if form_type in form_types and cik_in in cik:
-                records.append([form_type, company_name, cik.zfill(10), date_filed, file_name])
-    print(records)
+        if cik in line:
+            parts = re.split(r'\s{2,}', line.strip())
+            if len(parts) == 5:
+                form_type, company_name, cik_in, date_filed, file_name = parts
+
+                if form_type in form_types and cik_in in cik:
+                    records.append([form_type, company_name, cik.zfill(10), date_filed, file_name])
+                    return records
     return records 
 
 def extract_10k_urls(file_path):
@@ -283,7 +283,7 @@ def extract_10k_urls(file_path):
 
 def download_EDGAR(ticker, cik, root_path, target_directory):
     session = setup_session()  
-    start_year = 2022 
+    start_year = 2024 
     end_year = 2025 
     base_url = "https://www.sec.gov/Archives/edgar/full-index/" 
     requests_per_minute = 10 
@@ -300,8 +300,11 @@ def download_EDGAR(ticker, cik, root_path, target_directory):
             all_records.extend(parse_idx_file(file_path, form_types, cik_filled))
 
     accumulated_df = pd.DataFrame(all_records, columns=['Form_Type', 'Company_Name', 'CIK', 'Date_Filed', 'File_Name'])
+    del all_records
     output_file = root_path+"/static/combined_filtered.csv" 
+    print('created csv')
     accumulated_df.to_csv(output_file, index=False)
+    del accumulated_df
     url_10k = extract_10k_urls(output_file) 
 
     folder_name = root_path+"/static/10K" 
@@ -337,7 +340,7 @@ def concat_csvs(file_list):
     return pd.concat(dfs, ignore_index=True)
 
 def analyse_EDGAR(ticker, cik, root_path):
-    years = ['22','23', '24', '25']
+    years = ['24', '25']
 
     folder_name = root_path+"/static/10K" 
     folder=root_path+'/static/output-csv'
@@ -437,9 +440,7 @@ def analyse_EDGAR(ticker, cik, root_path):
 
 
 def run_full_analysis(ticker, cik, root_path, output_dir='static/plots'):
-    STATIC_FOLDER_PATH = os.path.join(root_path, 'static')
     INDEX_FILES_DIR = os.path.join(root_path, 'static', 'index_files')
-    PLOTS_DIR = os.path.join(root_path, 'static', 'plots')
 
     os.makedirs(output_dir, exist_ok=True)
     download_EDGAR(ticker, cik, root_path, INDEX_FILES_DIR)

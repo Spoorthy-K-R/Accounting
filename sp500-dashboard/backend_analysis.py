@@ -287,7 +287,7 @@ def extract_10k_urls(file_path):
 
 def download_EDGAR(ticker, cik, root_path, target_directory):
     session = setup_session()  
-    start_year = 2024 
+    start_year = 2025 
     end_year = 2025 
     base_url = "https://www.sec.gov/Archives/edgar/full-index/" 
     requests_per_minute = 10 
@@ -346,7 +346,7 @@ def concat_csvs(file_list):
     return pd.concat(dfs, ignore_index=True)
 
 def analyse_EDGAR(ticker, cik, root_path):
-    years = ['24', '25']
+    years = [ '25']
 
     folder_name = root_path+"/static/10K" 
     folder=root_path+'/static/output-csv'

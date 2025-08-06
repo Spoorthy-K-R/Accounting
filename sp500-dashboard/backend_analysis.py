@@ -381,6 +381,7 @@ def analyse_EDGAR(ticker, cik, root_path):
     balance_sheets = [f"{folder}/{ticker}_{y}_balance_sheet.csv" for y in years]
     cash_flows = [f"{folder}/{ticker}_{y}_cash_flow.csv" for y in years]
     income_statements = [f"{folder}/{ticker}_{y}_income_statement.csv" for y in years]
+    print('concatenating')
     df_balance = concat_csvs(balance_sheets)
     df_cash = concat_csvs(cash_flows)
     df_income = concat_csvs(income_statements)
@@ -419,7 +420,7 @@ def analyse_EDGAR(ticker, cik, root_path):
         - Provide supporting rationale (growth, profitability, risks, industry context).
         - Optionally, attempt a rough DCF, multiples-based, or scenario valuation and discuss any limitations.
 
-        Please structure your response in three sections only and do not return anything extra:
+        Please structure your response in three sections only and keep the response professional to the user without personal expressions. Use the available data only and do not expect more data for now:
         1. Financial Trends Analysis
         2. Insights and Explanations
         3. Valuation Advice
@@ -449,8 +450,12 @@ def run_full_analysis(ticker, cik, root_path, output_dir='static/plots'):
     INDEX_FILES_DIR = os.path.join(root_path, 'static', 'index_files')
 
     os.makedirs(output_dir, exist_ok=True)
-    download_EDGAR(ticker, cik, root_path, INDEX_FILES_DIR)
-    analysis_text = analyse_EDGAR(ticker, cik, root_path)
+    try:
+        download_EDGAR(ticker, cik, root_path, INDEX_FILES_DIR)
+        analysis_text = analyse_EDGAR(ticker, cik, root_path)
+    except Exception as e:
+        print('Error while downloading and analysing')
+        analysis_text = 'Error'
     df = download_stock_data(ticker)
     plots_info = []
 

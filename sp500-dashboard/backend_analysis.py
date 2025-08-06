@@ -89,7 +89,7 @@ def _get_llm_explanation(prompt_template_string, data_context, ticker, plot_type
     print(f"[CACHE SAVE] Saved {plot_type} explanation for {ticker} to cache.")
     return explanation
 
-def download_stock_data(ticker, period='5y'):
+def download_stock_data(ticker, period='1y'):
     """Download historical stock data for the given ticker."""
     stock = yf.Ticker(ticker)
     df = stock.history(period=period)
@@ -256,8 +256,6 @@ def download_and_unzip_forms(session, start_year, end_year, base_url, target_dir
             time.sleep(request_interval)
 
 def parse_idx_file(file_path, form_types, cik):
-    print('cik')
-    print(cik)
     records = []
     with open(file_path, 'r', encoding='utf-8') as file:
         lines = file.readlines()
@@ -266,9 +264,6 @@ def parse_idx_file(file_path, form_types, cik):
         parts = re.split(r'\s{2,}', line.strip())
         if len(parts) == 5:
             form_type, company_name, cik_in, date_filed, file_name = parts
-            # cik_padded = cik_in.zfill(10)
-            # if form_type in form_types:
-                # print(f"Found matching form type: {form_type}, CIK: {cik_padded}")
             if (cik==cik_in):
                 print('true')
             if form_type in form_types and cik_in in cik:
@@ -304,14 +299,11 @@ def download_EDGAR(ticker, cik, root_path, target_directory):
             print(f"Parsing file: {file_path}")
             all_records.extend(parse_idx_file(file_path, form_types, cik_filled))
 
-    print('reached')
-    print(all_records)
     accumulated_df = pd.DataFrame(all_records, columns=['Form_Type', 'Company_Name', 'CIK', 'Date_Filed', 'File_Name'])
     output_file = root_path+"/static/combined_filtered.csv" 
     accumulated_df.to_csv(output_file, index=False)
     url_10k = extract_10k_urls(output_file) 
-    print('urls')
-    print(url_10k)
+
     folder_name = root_path+"/static/10K" 
     shutil.rmtree(folder_name, ignore_errors=True)
     os.makedirs(folder_name, exist_ok=True) 
@@ -355,12 +347,9 @@ def analyse_EDGAR(ticker, cik, root_path):
             print(folder_name+'/'+input_file)
             year = input_file.split('-')[1]
             with open(folder_name+'/'+input_file, "r", encoding="utf-8", errors="ignore") as f:
-                print('inside')
                 soup = BeautifulSoup(f, 'html.parser')
 
             tables = soup.find_all('table')
-            print(f"{len(tables)} tables found in {input_file}")
-            print(tables[0])
 
             for section, headers in section_headers.items():
                 found = False
@@ -438,15 +427,11 @@ def analyse_EDGAR(ticker, cik, root_path):
         "income_text": income_text
     })
 
-    print("\n--- AI Summary ---\n")
-    print(result.content)
-
     # Save output
     shutil.rmtree(out_folder, ignore_errors=True)
     os.makedirs(out_folder)
     with open(out_folder+f"{ticker}-LLM-analysis.txt", "w", encoding="utf-8") as out:
         out.write(result.content)
-        print('written')
     return result.content
 
 
@@ -595,8 +580,8 @@ def run_full_analysis(ticker, cik, root_path, output_dir='static/plots'):
     tickers = [ticker, 'AAPL' if ticker!='AAPL' else 'NVDA', 'FDX' if ticker!='FDX' else 'HD']
     portfolio_value, ticker_value, _ = simulate_diversified_portfolio(tickers)
     diversified_path = os.path.join(output_dir, f'{ticker}_diversified_portfolio.png')
-    plot_diversified_portfolio(portfolio_value, ticker_value, ticker, diversified_path)
-    plots_info.append((f'{ticker}_diversified_portfolio.png', f'Compares a diversified portfolio ({ticker}, {tickers[1]}, {tickers[2]}) to {ticker} alone.'))
+    # plot_diversified_portfolio(portfolio_value, ticker_value, ticker, diversified_path)
+    # plots_info.append((f'{ticker}_diversified_portfolio.png', f'Compares a diversified portfolio ({ticker}, {tickers[1]}, {tickers[2]}) to {ticker} alone.'))
     # diversified_explanation_prompt = (
     #     """
     #     Explain the comparison between a diversified portfolio ({ticker}, {ticker2}, {ticker3}) and investing solely in {ticker} based on the following data:

@@ -261,7 +261,7 @@ def parse_idx_file(file_path, form_types, cik):
         lines = file.readlines()
     data_start = next(i for i, line in enumerate(lines) if re.match(r'-{3,}', line)) + 1
     for line in lines[data_start:]:
-        if cik in line:
+        if True:
             parts = re.split(r'\s{2,}', line.strip())
             if len(parts) == 5:
                 form_type, company_name, cik_in, date_filed, file_name = parts
@@ -300,12 +300,14 @@ def download_EDGAR(ticker, cik, root_path, target_directory):
             all_records.extend(parse_idx_file(file_path, form_types, cik_filled))
 
     accumulated_df = pd.DataFrame(all_records, columns=['Form_Type', 'Company_Name', 'CIK', 'Date_Filed', 'File_Name'])
-    del all_records
+    
     output_file = root_path+"/static/combined_filtered.csv" 
     print('created csv')
     accumulated_df.to_csv(output_file, index=False)
+    del all_records
     del accumulated_df
     url_10k = extract_10k_urls(output_file) 
+    print(url_10k)
 
     folder_name = root_path+"/static/10K" 
     shutil.rmtree(folder_name, ignore_errors=True)
@@ -387,6 +389,17 @@ def analyse_EDGAR(ticker, cik, root_path):
         """
         You are a financial analyst. Given the following financial statement tables for a company, perform a comprehensive analysis as follows:
 
+        Here are the financial statements:
+
+        Balance Sheet:
+        {balance_text}
+
+        Cash Flow Statement:
+        {cash_text}
+
+        Income Statement:
+        {income_text}
+        
         Financial Trends Analysis:
         - Summarize overall trends in revenue, profit, margins, debt, cash flow, and capital structure. Think of common size analysis and key financial ratios from a Financial Statement Analysis (FSA) course.
         - Identify any significant changes, anomalies, or turning points.
@@ -401,17 +414,6 @@ def analyse_EDGAR(ticker, cik, root_path):
         - Give a qualitative valuation perspective: Is the company undervalued, overvalued, or fairly valued based on its trends and financial performance? Should an investor buy, sell, or hold the company’s stock?
         - Provide supporting rationale (growth, profitability, risks, industry context).
         - Optionally, attempt a rough DCF, multiples-based, or scenario valuation and discuss any limitations.
-
-        Here are the financial statements:
-
-        Balance Sheet:
-        {balance_text}
-
-        Cash Flow Statement:
-        {cash_text}
-
-        Income Statement:
-        {income_text}
 
         Please structure your response in three sections only and do not return anything extra:
         1. Financial Trends Analysis

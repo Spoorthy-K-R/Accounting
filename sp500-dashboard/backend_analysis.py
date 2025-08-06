@@ -25,6 +25,7 @@ import shutil
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.chains import LLMChain
+from langchain.schema import AIMessage
 
 CACHE_DIR = 'llm_cache'
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -72,28 +73,39 @@ def _save_to_cache(ticker, plot_type, explanation):
 api_key = 'AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA' # Hardcoded API key from user's last edit
 if not api_key:
     raise ValueError("GOOGLE_API_KEY environment variable not set. Please set it to use LLM features.")
-# llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=api_key, temperature=0.2)
-llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key='AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA', temperature=0)
+llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key='AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA', temperature=0, request_timeout=60)
 
 
 def _get_llm_explanation(prompt_template_string, data_context, ticker, plot_type):
     """Helper function to get explanation from LLM, with caching."""
-
+    # Try to load from cache first
     cached_explanation = _load_from_cache(ticker, plot_type)
     if cached_explanation:
         print(f"[CACHE HIT] Loaded {plot_type} explanation for {ticker} from cache.")
         return cached_explanation
 
+    # If not in cache, generate with LLM
     print(f"[CACHE MISS] Generating {plot_type} explanation for {ticker} with LLM...")
     prompt = ChatPromptTemplate.from_template(prompt_template_string)
-    print(prompt)
-    chain = prompt | llm
-    response = chain.invoke(data_context)
-    explanation = response['text'] if 'text' in response else str(response)
+    chain = prompt | llm_model # Use the globally initialized llm_model
 
-    _save_to_cache(ticker, plot_type, explanation)
-    print(f"[CACHE SAVE] Saved {plot_type} explanation for {ticker} to cache.")
-    return explanation
+    try:
+        raw_response = chain.invoke(data_context)
+        explanation = ""
+        if isinstance(raw_response, AIMessage):
+            explanation = raw_response.content
+        elif isinstance(raw_response, dict) and 'text' in raw_response:
+            explanation = raw_response['text']
+        else:
+            explanation = str(raw_response) # Fallback for unexpected types
+
+        # Save to cache
+        _save_to_cache(ticker, plot_type, explanation)
+        print(f"[CACHE SAVE] Saved {plot_type} explanation for {ticker} to cache.")
+        return explanation
+    except Exception as e:
+        print(f"[LLM ERROR] Failed to get explanation for {ticker} {plot_type}: {e}")
+        return f"Could not generate explanation due to an error: {e}"
 
 def download_stock_data(ticker, period='2y'):
     """Download historical stock data for the given ticker."""

@@ -29,6 +29,12 @@ from langchain.chains import LLMChain
 CACHE_DIR = 'llm_cache'
 os.makedirs(CACHE_DIR, exist_ok=True)
 
+SECTION_REGEX_PATTERNS = {
+    'income_statement': r'consolidated statements of (operations|income).*?<table.*?>(.*?)</table>',
+    'balance_sheet': r'consolidated balance sheets.*?<table.*?>(.*?)</table>',
+    'cash_flow': r'consolidated statements of cash flows.*?<table.*?>(.*?)</table>',
+}
+
 section_headers = {
     'income_statement': [
         'consolidated statements of operations',
@@ -351,34 +357,104 @@ def analyse_EDGAR(ticker, cik, root_path):
     folder_name = root_path+"/static/10K" 
     folder=root_path+'/static/output-csv'
     out_folder=root_path+"/static/output-txt/"
+
+    extracted_csv_paths = []
+    full_html_content = ""
+
     for input_file in os.listdir(folder_name):
         if True:
             print(folder_name+'/'+input_file)
             year = input_file.split('-')[1]
-            with open(folder_name+'/'+input_file, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read(1000) # Read first 1000 chars
-                print(f"Content snippet from {folder_name+'/'+input_file}:\n{content[:500]}...") # Print first 500 chars
-                f.seek(0)
-                soup = BeautifulSoup(f, 'lxml') 
-                print('soup done')
 
-            for section, headers in section_headers.items():
-                found = False
-                for tag in soup.find_all(text=True):
-                    if any(header in tag.lower() for header in headers):
-                        # Find the next table after the header
-                        next_table = tag.find_parent().find_next('table')
-                        if next_table:
-                            df = pd.read_html(StringIO(str(next_table)))[0]
-                            # shutil.rmtree(folder, ignore_errors=True)
-                            os.makedirs(folder, exist_ok=True) 
-                            csv_file = folder+f"/{ticker}_{year}_{section}.csv"
-                            df.to_csv(csv_file, index=False)
-                            print(f"Saved {section} to {csv_file}")
-                            found = True
-                            break
-                if not found:
-                    print(f"{section} not found in {input_file}")
+            #######new method of extracting here###########
+            try:
+                with open(folder_name+'/'+input_file, "r", encoding="utf-8", errors="ignore") as f:
+                    full_html_content = f.read()
+                    print(f"DEBUG: Read {len(full_html_content)} bytes for {ticker} {year}. Memory use for raw string: {len(full_html_content) / (1024*1024):.2f} MB")
+
+            except FileNotFoundError:
+                print(f"Error: 10-K file not found at {file_path}")
+                return []
+            except Exception as e:
+                print(f"Error reading file {file_path}: {e}")
+                return []
+
+            for section_name, headers in section_headers.items(): # Use your existing section_headers for text matching
+                section_html_snippet = None
+                combined_header_pattern = '|'.join(re.escape(h) for h in headers) 
+                pattern = rf'({combined_header_pattern}).*?<table.*?>(.*?)</table>'
+                match = re.search(pattern, full_html_content, re.IGNORECASE | re.DOTALL | re.S)
+                print('match')
+                print(match)
+
+                if match:
+                    section_html_snippet = match.group(0) # Get the full matched HTML string including header and table
+                    print(f"DEBUG: Found {section_name} snippet (length: {len(section_html_snippet)}).")
+                else:
+                    print(f"Warning: {section_name} pattern not found in {ticker} {year}. Skipping section.")
+                    continue
+
+                df = pd.DataFrame()
+                try:
+                    if section_html_snippet:
+                        # Create a temporary BeautifulSoup object for the snippet
+                        section_soup = BeautifulSoup(section_html_snippet, 'lxml') 
+                        
+                        tables_in_snippet = section_soup.find_all('table')
+
+                        if tables_in_snippet: # Check if list is not empty
+                            df = pd.read_html(StringIO(str(tables_in_snippet[0])), flavor='lxml')[0] # Parse the first table found in snippet
+                            
+                            # Clean up DataFrame (common issue with EDGAR tables)
+                            df.dropna(how='all', axis=1, inplace=True) # Drop columns that are all NaN
+                            df.dropna(how='all', axis=0, inplace=True) # Drop rows that are all NaN
+                            
+                            if not df.empty:
+                                csv_file_name = f"{ticker}_{year}_{section_name}.csv"
+                                csv_file_path = os.path.join(folder, csv_file_name)
+                                os.makedirs(folder, exist_ok=True) # Ensure output dir exists
+                                df.to_csv(csv_file_path, index=False)
+                                print(f"Extracted and saved {section_name} for {ticker} {year} to {csv_file_path}")
+                                extracted_csv_paths.append(csv_file_path)
+                            else:
+                                print(f"Warning: {section_name} table was empty after cleaning for {ticker} {year}.")
+                        else:
+                            print(f"Warning: BeautifulSoup found no tables in the HTML snippet for {section_name} of {ticker} {year}. Snippet length: {len(section_html_snippet)}")
+                    else:
+                        print(f"Warning: No HTML snippet extracted for {section_name} for {ticker} {year}.")
+                except ValueError as ve: # pd.read_html specific errors
+                    print(f"Error parsing HTML table for {section_name} of {ticker} {year}: {ve}. Snippet starts: {section_html_snippet[:500] if section_html_snippet else 'N/A'}...")
+                except Exception as e:
+                    print(f"An unexpected error occurred processing {section_name} for {ticker} {year}: {e}. Snippet starts: {section_html_snippet[:500] if section_html_snippet else 'N/A'}...")
+                
+                # Explicitly clear variables for this section to free memory
+                del section_html_snippet
+                if 'section_soup' in locals(): del section_soup # Delete the temporary soup object
+                del df # If df is no longer needed after saving to CSV
+
+            # Explicitly clear the full HTML content after all sections are processed for the current file
+            del full_html_content
+                        
+
+################old method of extracting here#####################
+
+                # found = False
+                # for tag in soup.find_all(text=True):
+                #     if any(header in tag.lower() for header in headers):
+                #         # Find the next table after the header
+                #         next_table = tag.find_parent().find_next('table')
+                #         if next_table:
+                #             df = pd.read_html(StringIO(str(next_table)))[0]
+                #             # shutil.rmtree(folder, ignore_errors=True)
+                #             os.makedirs(folder, exist_ok=True) 
+                #             csv_file = folder+f"/{ticker}_{year}_{section}.csv"
+                #             df.to_csv(csv_file, index=False)
+                #             del df
+                #             print(f"Saved {section} to {csv_file}")
+                #             found = True
+                #             break
+                # if not found:
+                #     print(f"{section} not found in {input_file}")
 
     balance_sheets = [f"{folder}/{ticker}_{y}_balance_sheet.csv" for y in years]
     cash_flows = [f"{folder}/{ticker}_{y}_cash_flow.csv" for y in years]

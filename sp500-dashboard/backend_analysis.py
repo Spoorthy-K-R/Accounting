@@ -356,9 +356,10 @@ def analyse_EDGAR(ticker, cik, root_path):
             print(folder_name+'/'+input_file)
             year = input_file.split('-')[1]
             with open(folder_name+'/'+input_file, "r", encoding="utf-8", errors="ignore") as f:
-                soup = BeautifulSoup(f, 'html.parser')
-
-            tables = soup.find_all('table')
+                content = f.read(1000) # Read first 1000 chars
+                print(f"Content snippet from {folder_name+'/'+input_file}:\n{content[:500]}...") # Print first 500 chars
+                f.seek(0) # Reset file pointer to beginning for BeautifulSoup to read
+                soup = BeautifulSoup(f, 'lxml') 
 
             for section, headers in section_headers.items():
                 found = False

@@ -262,7 +262,11 @@ def parse_idx_file(file_path, form_types, cik):
     data_start = next(i for i, line in enumerate(lines) if re.match(r'-{3,}', line)) + 1
     for line in lines[data_start:]:
         if True:
-            parts = re.split(r'\s{2,}', line.strip())
+            try:
+                parts = re.split(r'\s{2,}', line.strip())
+            except Exception as e:
+                print(f"Error processing line... Error: {e}")
+                continue
             if len(parts) == 5:
                 form_type, company_name, cik_in, date_filed, file_name = parts
 
@@ -399,7 +403,7 @@ def analyse_EDGAR(ticker, cik, root_path):
 
         Income Statement:
         {income_text}
-        
+
         Financial Trends Analysis:
         - Summarize overall trends in revenue, profit, margins, debt, cash flow, and capital structure. Think of common size analysis and key financial ratios from a Financial Statement Analysis (FSA) course.
         - Identify any significant changes, anomalies, or turning points.

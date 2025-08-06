@@ -5,10 +5,10 @@ from backend_analysis import run_full_analysis
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder='static')
-CORS(app) # Enable CORS for all routes (or specify origins)
+CORS(app) 
 
 # Load S&P 500 companies
-sp500 = pd.read_csv('sp100_list.csv')  # columns: Symbol, Name
+sp500 = pd.read_csv('sp100_list.csv')
 
 @app.route('/api/companies')
 def get_companies():
@@ -18,9 +18,12 @@ def get_companies():
 @app.route('/api/analysis/<ticker>')
 def get_analysis(ticker):
     try:
-        # Here, call your analysis functions (from your previous script)
         cik = sp500.loc[sp500['tic']==ticker, 'cik']
-        plot_info = run_full_analysis(ticker, str(cik).split()[1])
+        plot_info = run_full_analysis(ticker, str(cik).split()[1], app.root_path)
+        analysis_key, analysis_text = plot_info.pop()
+        print(analysis_key)
+        print('plot_info')
+        print(plot_info)
 
         plots = [
             {
@@ -30,9 +33,10 @@ def get_analysis(ticker):
             }
             for filename, explanation in plot_info
         ]
-        return jsonify({'plots': plots})
+        print('json')
+        print(jsonify({'plots': plots, 'text': analysis_text}))
+        return jsonify({'plots': plots, 'text': analysis_text})
     except Exception as e:
-        # Log the error for debugging
         app.logger.error(f"Error processing analysis for {ticker}: {e}")
         return jsonify({'error': str(e)}), 500
 

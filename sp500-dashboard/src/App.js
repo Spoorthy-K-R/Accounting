@@ -5,8 +5,9 @@ function App() {
   const [companies, setCompanies] = useState([]);
   const [selected, setSelected] = useState('');
   const [plots, setPlots] = useState([]);
+  const [analysis, setAnalysis] = useState([]);
   const FLASK_BACKEND_URL = 'https://financial-data-analysis.onrender.com';
-  // const FLASK_BACKEND_URL = 'http://localhost:5000';
+  // const FLASK_BACKEND_URL = 'http://127.0.0.1:5000';
 
 
   useEffect(() => {
@@ -15,18 +16,25 @@ function App() {
 
   const handleChange = (e) => { 
     setSelected(e.target.value);
-    axios.get(`${FLASK_BACKEND_URL}/api/analysis/${e.target.value}`).then(res => setPlots(res.data.plots));
+    axios.get(`${FLASK_BACKEND_URL}/api/analysis/${e.target.value}`).then(res => {
+      setPlots(res.data.plots)
+      setAnalysis(res.data.text)
+      console.log('here')
+  });
   };
 
   return (
     <div>
       <h1>S&P 500 Company Analysis Dashboard</h1>
-      <select onChange={handleChange} value={selected}>
-        <option value="">Select a company</option>
-        {companies.map(c => (
-          <option key={c.tic} value={c.tic}>{c.conm} ({c.tic})</option>
-        ))}
-      </select>
+      <div>
+        <select onChange={handleChange} value={selected}>
+          <option value="">Select a company</option>
+          {companies.map(c => (
+            <option key={c.tic} value={c.tic}>{c.conm} ({c.tic})</option>
+          ))}
+        </select>
+        {/* <button onChange={handleAnalysis}>Display Analysis</button> */}
+      </div>
       <div>
         {plots.map(plot => (
           <div key={plot.title}>
@@ -35,6 +43,12 @@ function App() {
             <p>{plot.explanation}</p>
           </div>
         ))}
+        { analysis.length>0 && (
+        <div>
+          <h2>Analysis Results</h2>
+          <p>{analysis}</p>
+        </div>
+      ) }
       </div>
     </div>
   );

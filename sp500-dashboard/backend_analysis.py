@@ -1,14 +1,13 @@
 import os
 import yfinance as yf
 import matplotlib
-matplotlib.use('Agg') # Set the backend before importing pyplot
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 import pandas as pd
 from io import StringIO
 import shutil
 import numpy as np
-import pandas as pd
 import json 
 import requests
 import os
@@ -17,21 +16,16 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import zipfile
-import os
 from io import BytesIO
 import time
 import glob
-import pandas as pd
 import re
-import os
-import chardet
 import shutil
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.chains import LLMChain
 
-# --- Caching Configuration ---
 CACHE_DIR = 'llm_cache'
 os.makedirs(CACHE_DIR, exist_ok=True)
 
@@ -292,12 +286,11 @@ def extract_10k_urls(file_path):
                 urls.append(f"https://www.sec.gov/Archives/{url}")
     return urls
 
-def download_EDGAR(ticker, cik):
+def download_EDGAR(ticker, cik, root_path, target_directory):
     session = setup_session()  
     start_year = 2024 
     end_year = 2025 
     base_url = "https://www.sec.gov/Archives/edgar/full-index/" 
-    target_directory = "/Users/spoorthy/Projects/Accounting/sp500-dashboard/static/index_files"  
     requests_per_minute = 10 
     os.makedirs(target_directory, exist_ok=True) 
     
@@ -314,12 +307,12 @@ def download_EDGAR(ticker, cik):
     print('reached')
     print(all_records)
     accumulated_df = pd.DataFrame(all_records, columns=['Form_Type', 'Company_Name', 'CIK', 'Date_Filed', 'File_Name'])
-    output_file = "/Users/spoorthy/Projects/Accounting/sp500-dashboard/static/combined_filtered.csv" 
+    output_file = root_path+"/static/combined_filtered.csv" 
     accumulated_df.to_csv(output_file, index=False)
     url_10k = extract_10k_urls(output_file) 
     print('urls')
     print(url_10k)
-    folder_name = "/Users/spoorthy/Projects/Accounting/sp500-dashboard/static/10K" 
+    folder_name = root_path+"/static/10K" 
     shutil.rmtree(folder_name, ignore_errors=True)
     os.makedirs(folder_name, exist_ok=True) 
     headers = {
@@ -351,12 +344,12 @@ def concat_csvs(file_list):
             print(f"Could not read {f}: {e}")
     return pd.concat(dfs, ignore_index=True)
 
-def analyse_EDGAR(ticker, cik):
-    years = ['24', '25']
+def analyse_EDGAR(ticker, cik, root_path):
+    years = ['22','23', '24', '25']
 
-    folder_name = "/Users/spoorthy/Projects/Accounting/sp500-dashboard/static/10K" 
-    folder='/Users/spoorthy/Projects/Accounting/sp500-dashboard/static/output-csv'
-    out_folder="Users/spoorthy/Projects/Accounting/sp500-dashboard/static/output-txt"
+    folder_name = root_path+"/static/10K" 
+    folder=root_path+'/static/output-csv'
+    out_folder=root_path+"/static/output-txt/"
     for input_file in os.listdir(folder_name):
         if True:
             print(folder_name+'/'+input_file)
@@ -428,7 +421,7 @@ def analyse_EDGAR(ticker, cik):
         Income Statement:
         {income_text}
 
-        Please structure your response in three sections:
+        Please structure your response in three sections only and do not return anything extra:
         1. Financial Trends Analysis
         2. Insights and Explanations
         3. Valuation Advice
@@ -437,7 +430,7 @@ def analyse_EDGAR(ticker, cik):
 
     llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key="AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA", temperature=0)
     prompt = ChatPromptTemplate.from_template(prompt_template)
-    chain = LLMChain(llm=llm, prompt=prompt)
+    chain = prompt | llm
 
     result = chain.invoke({
         "balance_text": balance_text,
@@ -446,19 +439,26 @@ def analyse_EDGAR(ticker, cik):
     })
 
     print("\n--- AI Summary ---\n")
-    print(result['text'] if 'text' in result else result)
+    print(result.content)
 
     # Save output
-    out_file = os.path.join(out_folder, f"{ticker}_analysis-new.txt")
-    with open(f"{ticker}_analysis-new.txt", "w", encoding="utf-8") as out:
-        out.write(result['text'] if 'text' in result else result)
+    shutil.rmtree(out_folder, ignore_errors=True)
+    os.makedirs(out_folder)
+    with open(out_folder+f"{ticker}-LLM-analysis.txt", "w", encoding="utf-8") as out:
+        out.write(result.content)
+        print('written')
+    return result.content
 
 
 
-def run_full_analysis(ticker, cik, output_dir='static/plots'):
+def run_full_analysis(ticker, cik, root_path, output_dir='static/plots'):
+    STATIC_FOLDER_PATH = os.path.join(root_path, 'static')
+    INDEX_FILES_DIR = os.path.join(root_path, 'index_files')
+    PLOTS_DIR = os.path.join(root_path, 'static', 'plots')
+
     os.makedirs(output_dir, exist_ok=True)
-    # download_EDGAR(ticker, cik)
-    analyse_EDGAR(ticker, cik)
+    download_EDGAR(ticker, cik, root_path, INDEX_FILES_DIR)
+    analysis_text = analyse_EDGAR(ticker, cik, root_path)
     df = download_stock_data(ticker)
     plots_info = []
 
@@ -619,5 +619,6 @@ def run_full_analysis(ticker, cik, output_dir='static/plots'):
     #     'diversified_portfolio'
     # )
     # plots_info.append((f'{ticker}_diversified_portfolio.png', diversified_explanation))
+    plots_info.append(('analysis', analysis_text))
 
     return plots_info 

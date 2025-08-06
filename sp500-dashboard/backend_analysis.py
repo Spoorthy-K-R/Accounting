@@ -73,7 +73,8 @@ def _save_to_cache(ticker, plot_type, explanation):
 api_key = 'AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA' # Hardcoded API key from user's last edit
 if not api_key:
     raise ValueError("GOOGLE_API_KEY environment variable not set. Please set it to use LLM features.")
-llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key='AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA', temperature=0, request_timeout=60)
+# llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=api_key, temperature=0.2)
+llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key='AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA', temperature=0, timeout=60)
 
 
 def _get_llm_explanation(prompt_template_string, data_context, ticker, plot_type):
@@ -107,7 +108,7 @@ def _get_llm_explanation(prompt_template_string, data_context, ticker, plot_type
         print(f"[LLM ERROR] Failed to get explanation for {ticker} {plot_type}: {e}")
         return f"Could not generate explanation due to an error: {e}"
 
-def download_stock_data(ticker, period='2y'):
+def download_stock_data(ticker, period='6mo'): # Reduced to 6 months
     """Download historical stock data for the given ticker."""
     stock = yf.Ticker(ticker)
     df = stock.history(period=period)
@@ -117,7 +118,7 @@ def plot_closing_and_moving_averages(df, ticker, output_path):
     """Plot closing price and moving averages for the ticker."""
     df['MA50'] = df['Close'].rolling(window=50).mean()
     df['MA200'] = df['Close'].rolling(window=200).mean()
-    plt.figure(figsize=(14,7))
+    plt.figure(figsize=(10,6)) # Reduced figsize
     plt.plot(df['Close'], label='Close Price')
     plt.plot(df['MA50'], label='50-Day MA')
     plt.plot(df['MA200'], label='200-Day MA')
@@ -126,34 +127,34 @@ def plot_closing_and_moving_averages(df, ticker, output_path):
     plt.ylabel('Price ($)')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(output_path)
+    plt.savefig(output_path, dpi=75) # Reduced DPI
     plt.close()
 
 def calculate_and_plot_returns(df, ticker, output_path):
     """Calculate and plot daily returns for the ticker."""
     df['Daily Return'] = df['Close'].pct_change()
-    plt.figure(figsize=(14,5))
+    plt.figure(figsize=(10,5)) # Reduced figsize
     plt.plot(df['Daily Return'], label='Daily Return')
     plt.title(f'{ticker} Daily Returns')
     plt.xlabel('Date')
     plt.ylabel('Return')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(output_path)
+    plt.savefig(output_path, dpi=75) # Reduced DPI
     plt.close()
     return df
 
 def calculate_and_plot_rolling_volatility(df, ticker, output_path, window=21):
     """Calculate and plot rolling volatility for the ticker."""
     df['Rolling Volatility'] = df['Daily Return'].rolling(window=window).std()
-    plt.figure(figsize=(14,5))
+    plt.figure(figsize=(10,5)) # Reduced figsize
     plt.plot(df['Rolling Volatility'], label=f'{window}-Day Rolling Volatility')
     plt.title(f'{ticker} Rolling Volatility')
     plt.xlabel('Date')
     plt.ylabel('Volatility')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(output_path)
+    plt.savefig(output_path, dpi=75) # Reduced DPI
     plt.close()
     return df
 
@@ -164,14 +165,14 @@ def simulate_buy_and_hold(df, initial_investment=10000):
 
 def plot_buy_and_hold(df, ticker, output_path):
     """Plot buy-and-hold portfolio value for the ticker."""
-    plt.figure(figsize=(14,5))
+    plt.figure(figsize=(10,5)) # Reduced figsize
     plt.plot(df['Portfolio Value'], label='Buy-and-Hold Portfolio Value')
     plt.title(f'{ticker} Buy-and-Hold Portfolio Simulation')
     plt.xlabel('Date')
     plt.ylabel('Portfolio Value ($)')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(output_path)
+    plt.savefig(output_path, dpi=75) # Reduced DPI
     plt.close()
 
 def simulate_dca(df, investment_per_period=500, period_days=21):
@@ -188,17 +189,17 @@ def simulate_dca(df, investment_per_period=500, period_days=21):
 
 def plot_dca(df, ticker, output_path):
     """Plot DCA portfolio value for the ticker."""
-    plt.figure(figsize=(14,5))
+    plt.figure(figsize=(10,5)) # Reduced figsize
     plt.plot(df['DCA Portfolio Value'], label='DCA Portfolio Value')
     plt.title(f'{ticker} Dollar-Cost Averaging Simulation')
     plt.xlabel('Date')
     plt.ylabel('Portfolio Value ($)')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(output_path)
+    plt.savefig(output_path, dpi=75) # Reduced DPI
     plt.close()
 
-def simulate_diversified_portfolio(tickers, period='5y', initial_investment=10000):
+def simulate_diversified_portfolio(tickers, period='6mo', initial_investment=10000): # Reduced to 6 months
     """Simulate a diversified portfolio including the given ticker, AAPL and SPY."""
     data = yf.download(tickers, period=period)['Close']
     returns = data.pct_change().dropna()
@@ -206,11 +207,11 @@ def simulate_diversified_portfolio(tickers, period='5y', initial_investment=1000
     portfolio_returns = (returns * weights).sum(axis=1)
     portfolio_value = initial_investment * (1 + portfolio_returns).cumprod()
     ticker_value = initial_investment * (1 + returns[tickers[0]]).cumprod()
-    return portfolio_value, ticker_value, data
+    return portfolio_value, ticker_value
 
 def plot_diversified_portfolio(portfolio_value, ticker_value, ticker, output_path):
     """Plot diversified portfolio vs. single ticker portfolio."""
-    plt.figure(figsize=(14,5))
+    plt.figure(figsize=(10,5)) # Reduced figsize
     plt.plot(portfolio_value, label='Diversified Portfolio')
     plt.plot(ticker_value, label=f'{ticker} Only')
     plt.title(f'Diversified Portfolio vs. {ticker} Only')
@@ -218,7 +219,7 @@ def plot_diversified_portfolio(portfolio_value, ticker_value, ticker, output_pat
     plt.ylabel('Portfolio Value ($)')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(output_path)
+    plt.savefig(output_path, dpi=75) # Reduced DPI
     plt.close()
 
 #############################################
@@ -680,7 +681,7 @@ def run_full_analysis(ticker, cik, root_path, output_dir='static/plots'):
 
     # 6. Diversified portfolio simulation
     tickers = [ticker, 'AAPL' if ticker!='AAPL' else 'NVDA', 'FDX' if ticker!='FDX' else 'HD']
-    portfolio_value, ticker_value, _ = simulate_diversified_portfolio(tickers)
+    portfolio_value, ticker_value = simulate_diversified_portfolio(tickers)
     diversified_path = os.path.join(output_dir, f'{ticker}_diversified_portfolio.png')
     # plot_diversified_portfolio(portfolio_value, ticker_value, ticker, diversified_path)
     # plots_info.append((f'{ticker}_diversified_portfolio.png', f'Compares a diversified portfolio ({ticker}, {tickers[1]}, {tickers[2]}) to {ticker} alone.'))

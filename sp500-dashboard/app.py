@@ -2,6 +2,7 @@ from flask import Flask, jsonify, send_from_directory, request
 import pandas as pd
 import os
 from backend_analysis import run_full_analysis
+from backend_analysis import analyse_EDGAR
 from flask_cors import CORS
 
 app = Flask(__name__, static_folder='static')
@@ -14,6 +15,13 @@ sp500 = pd.read_csv('sp100_list.csv')
 def get_companies():
     companies = sp500[['tic', 'conm']].to_dict(orient='records')
     return jsonify(companies)
+
+@app.route('/api/analysis/LLM/<ticker>')
+def get_LLM_analysis(ticker):
+    print('call made')
+    cik = sp500.loc[sp500['tic']==ticker, 'cik']
+    text = analyse_EDGAR(ticker, cik, app.root_path)
+    return jsonify(text)
 
 @app.route('/api/analysis/<ticker>')
 def get_analysis(ticker):

@@ -11,8 +11,8 @@ function App() {
   const [error, setError] = useState(null); // New state for error messages
 
 
-  const FLASK_BACKEND_URL = 'https://financial-data-analysis.onrender.com';
-  // const FLASK_BACKEND_URL = 'http://127.0.0.1:5000';
+  // const FLASK_BACKEND_URL = 'https://financial-data-analysis.onrender.com';
+  const FLASK_BACKEND_URL = 'http://127.0.0.1:5000';
 
 
   useEffect(() => {
@@ -28,7 +28,7 @@ function App() {
     const newSelection = e.target.value;
     setSelected(newSelection);
     setPlots([]); 
-    setAnalysis(null);
+    // setAnalysis(null);
     setError(null);
     
     if (!newSelection) { 
@@ -51,9 +51,18 @@ function App() {
     });
   };
 
+  const handleAnalysis = (e) => {
+    console.log('hi')
+    axios.get(`${FLASK_BACKEND_URL}/api/analysis/LLM/${selected}`)
+    .then(res => {
+      console.log('here atleast')
+      setAnalysis(res.data)
+    })
+  }
+
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
-      <h1>S&P 500 Company Analysis Dashboard</h1>
+      <h1>S&P 100 Company Analysis Dashboard</h1>
       
       <div style={{ marginBottom: '30px' }}>
         <select 
@@ -66,6 +75,7 @@ function App() {
             <option key={c.tic} value={c.tic}>{c.conm} ({c.tic})</option>
           ))}
         </select>
+        {/* <button onChange={handleAnalysis}>Display LLM Analysis</button> */}
       </div>
 
       {error && (
@@ -105,7 +115,7 @@ function App() {
           </div>
         ))}
         
-        { analysis.length>0 && (
+        {analysis.length>0 && (
         <div>
           <h2>Analysis Results (This Analysis is AI generated)</h2>
           <p style={{fontSize: '1.1rem', textAlign: 'justify'}}>{analysis}</p>

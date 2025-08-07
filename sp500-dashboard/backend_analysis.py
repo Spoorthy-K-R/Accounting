@@ -473,13 +473,22 @@ def analyse_EDGAR(ticker, cik, root_path):
     cash_flows = [f"{folder}/{ticker}_{y}_cash_flow.csv" for y in years]
     income_statements = [f"{folder}/{ticker}_{y}_income_statement.csv" for y in years]
     print('concatenating')
-    df_balance = concat_csvs(balance_sheets)
-    df_cash = concat_csvs(cash_flows)
-    df_income = concat_csvs(income_statements)
 
+    df_balance = concat_csvs(balance_sheets)
     balance_text = df_balance.to_string(index=False)
+    print('balance sheet done')
+    del df_balance
+    
+    df_cash = concat_csvs(cash_flows)
     cash_text = df_cash.to_string(index=False)
+    print('cashflow done')
+    del df_cash
+
+    df_income = concat_csvs(income_statements)
     income_text = df_income.to_string(index=False)
+    print('income statement done')
+    del df_income
+    
 
     prompt_template = (
         """

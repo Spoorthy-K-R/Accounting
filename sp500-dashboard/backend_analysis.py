@@ -527,15 +527,17 @@ def analyse_EDGAR(ticker, cik, root_path):
         """
     )
 
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key="AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA", temperature=0)
+    # llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key="AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA", temperature=0, timeout=60)
     prompt = ChatPromptTemplate.from_template(prompt_template)
-    chain = prompt | llm
+    chain = prompt | llm_model
 
     result = chain.invoke({
         "balance_text": balance_text,
         "cash_text": cash_text,
         "income_text": income_text
     })
+    print('AI result')
+    print(result)
 
     # Save output
     shutil.rmtree(out_folder, ignore_errors=True)

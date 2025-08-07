@@ -69,12 +69,11 @@ def _save_to_cache(ticker, plot_type, explanation):
         json.dump({'explanation': explanation}, f, indent=2)
 
 # Initialize LLM (ensure GOOGLE_API_KEY is set in your environment)
-# api_key = os.getenv('GOOGLE_API_KEY')
-api_key = 'AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA' # Hardcoded API key from user's last edit
+api_key = os.getenv('GOOGLE_API_KEY')
 if not api_key:
     raise ValueError("GOOGLE_API_KEY environment variable not set. Please set it to use LLM features.")
 # llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=api_key, temperature=0.2)
-llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key='AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA', temperature=0, timeout=60)
+llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", google_api_key=api_key, temperature=0, timeout=60)
 
 
 def _get_llm_explanation(prompt_template_string, data_context, ticker, plot_type):
@@ -527,7 +526,6 @@ def analyse_EDGAR(ticker, cik, root_path):
         """
     )
 
-    # llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key="AIzaSyD8Lnshp4THbp7jYRF9IHFyxtyGAdEBzfA", temperature=0, timeout=60)
     prompt = ChatPromptTemplate.from_template(prompt_template)
     chain = prompt | llm_model
 

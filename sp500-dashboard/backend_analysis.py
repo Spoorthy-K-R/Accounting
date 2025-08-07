@@ -468,80 +468,71 @@ def analyse_EDGAR(ticker, cik, root_path):
                 # if not found:
                 #     print(f"{section} not found in {input_file}")
 
-    # balance_sheets = [f"{folder}/{ticker}_{y}_balance_sheet.csv" for y in years]
-    # cash_flows = [f"{folder}/{ticker}_{y}_cash_flow.csv" for y in years]
-    # income_statements = [f"{folder}/{ticker}_{y}_income_statement.csv" for y in years]
-    # print('concatenating')
+    balance_sheets = [f"{folder}/{ticker}_{y}_balance_sheet.csv" for y in years]
+    cash_flows = [f"{folder}/{ticker}_{y}_cash_flow.csv" for y in years]
+    income_statements = [f"{folder}/{ticker}_{y}_income_statement.csv" for y in years]
+    print('concatenating')
 
-    # df_balance = concat_csvs(balance_sheets)
-    # balance_text = df_balance.to_string(index=False)
-    # print('balance sheet done')
-    # del df_balance
+    df_balance = concat_csvs(balance_sheets)
+    balance_text = df_balance.to_string(index=False)
+    print('balance sheet done')
+    del df_balance
     
-    # df_cash = concat_csvs(cash_flows)
-    # cash_text = df_cash.to_string(index=False)
-    # print('cashflow done')
-    # del df_cash
+    df_cash = concat_csvs(cash_flows)
+    cash_text = df_cash.to_string(index=False)
+    print('cashflow done')
+    del df_cash
 
-    # df_income = concat_csvs(income_statements)
-    # income_text = df_income.to_string(index=False)
-    # print('income statement done')
-    # del df_income
+    df_income = concat_csvs(income_statements)
+    income_text = df_income.to_string(index=False)
+    print('income statement done')
+    del df_income
     
-
-    # prompt_template = (
-    #     """
-    #     You are a financial analyst. Given the following financial statement tables for a company, perform a comprehensive analysis as follows:
-
-    #     Here are the financial statements:
-
-    #     Balance Sheet:
-    #     {balance_text}
-
-    #     Cash Flow Statement:
-    #     {cash_text}
-
-    #     Income Statement:
-    #     {income_text}
-
-    #     Financial Trends Analysis:
-    #     - Summarize overall trends in revenue, profit, margins, debt, cash flow, and capital structure. Think of common size analysis and key financial ratios from a Financial Statement Analysis (FSA) course.
-    #     - Identify any significant changes, anomalies, or turning points.
-    #     - Spot potential red flags or opportunities (e.g., declining margins, rising leverage, growth acceleration).
-
-    #     Insights and Explanations:
-    #     - Explain the key drivers behind major changes
-    #     - Interpret ratios or other computed metrics and provide context.
-    #     - Assess risks and opportunities for investors.
-
-    #     Valuation Advice:
-    #     - Give a qualitative valuation perspective: Is the company undervalued, overvalued, or fairly valued based on its trends and financial performance? Should an investor buy, sell, or hold the company’s stock?
-    #     - Provide supporting rationale (growth, profitability, risks, industry context).
-    #     - Optionally, attempt a rough DCF, multiples-based, or scenario valuation and discuss any limitations.
-
-    #     Please structure your response in three sections only and keep the response professional to the user without personal expressions. Use the available data only and do not expect more data for now:
-    #     1. Financial Trends Analysis
-    #     2. Insights and Explanations
-    #     3. Valuation Advice
-    #     """
-    # )
 
     prompt_template = (
         """
-            Provide some basic background of the company having the given EDGAR tic: {ticker}
+        You are a financial analyst. Given the following financial statement tables for a company, perform a comprehensive analysis as follows:
+
+        Here are the financial statements:
+
+        Balance Sheet:
+        {balance_text}
+
+        Cash Flow Statement:
+        {cash_text}
+
+        Income Statement:
+        {income_text}
+
+        Financial Trends Analysis:
+        - Summarize overall trends in revenue, profit, margins, debt, cash flow, and capital structure. Think of common size analysis and key financial ratios from a Financial Statement Analysis (FSA) course.
+        - Identify any significant changes, anomalies, or turning points.
+        - Spot potential red flags or opportunities (e.g., declining margins, rising leverage, growth acceleration).
+
+        Insights and Explanations:
+        - Explain the key drivers behind major changes
+        - Interpret ratios or other computed metrics and provide context.
+        - Assess risks and opportunities for investors.
+
+        Valuation Advice:
+        - Give a qualitative valuation perspective: Is the company undervalued, overvalued, or fairly valued based on its trends and financial performance? Should an investor buy, sell, or hold the company’s stock?
+        - Provide supporting rationale (growth, profitability, risks, industry context).
+        - Optionally, attempt a rough DCF, multiples-based, or scenario valuation and discuss any limitations.
+
+        Please structure your response in three sections only and keep the response professional to the user without personal expressions. Use the available data only and do not expect more data for now:
+        1. Financial Trends Analysis
+        2. Insights and Explanations
+        3. Valuation Advice
         """
     )
+
     prompt = ChatPromptTemplate.from_template(prompt_template)
     chain = prompt | llm_model
 
-    # result = chain.invoke({
-    #     "balance_text": balance_text,
-    #     "cash_text": cash_text,
-    #     "income_text": income_text
-    # })
-
     result = chain.invoke({
-        "ticker": ticker
+        "balance_text": balance_text,
+        "cash_text": cash_text,
+        "income_text": income_text
     })
     print('AI result')
     print(result.content)

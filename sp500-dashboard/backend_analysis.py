@@ -199,8 +199,7 @@ def plot_dca(df, ticker, output_path):
     plt.savefig(output_path, dpi=75) # Reduced DPI
     plt.close()
 
-def simulate_diversified_portfolio(tickers, period='6mo', initial_investment=10000): # Reduced to 6 months
-    """Simulate a diversified portfolio including the given ticker, AAPL and SPY."""
+def simulate_diversified_portfolio(tickers, period='1y', initial_investment=10000): # Reduced to 6 months
     data = yf.download(tickers, period=period)['Close']
     returns = data.pct_change().dropna()
     weights = [1/len(tickers)] * len(tickers)
@@ -209,12 +208,12 @@ def simulate_diversified_portfolio(tickers, period='6mo', initial_investment=100
     ticker_value = initial_investment * (1 + returns[tickers[0]]).cumprod()
     return portfolio_value, ticker_value
 
-def plot_diversified_portfolio(portfolio_value, ticker_value, ticker, output_path):
+def plot_diversified_portfolio(portfolio_value, ticker_value, tickers, output_path):
     """Plot diversified portfolio vs. single ticker portfolio."""
     plt.figure(figsize=(10,5)) # Reduced figsize
     plt.plot(portfolio_value, label='Diversified Portfolio')
-    plt.plot(ticker_value, label=f'{ticker} Only')
-    plt.title(f'Diversified Portfolio vs. {ticker} Only')
+    plt.plot(ticker_value, label=f'{tickers[0]} Only')
+    plt.title(f'Diversified Portfolio with {tickers[1]} {tickers[2]} {'' if len(tickers)<4 else tickers[3]} vs. {tickers[0]} Only')
     plt.xlabel('Date')
     plt.ylabel('Portfolio Value ($)')
     plt.legend()
@@ -537,16 +536,28 @@ def analyse_EDGAR(ticker, cik, root_path):
         "income_text": income_text
     })
     print('AI result')
-    print(result)
+    print(result.content)
 
     # Save output
-    shutil.rmtree(out_folder, ignore_errors=True)
-    os.makedirs(out_folder)
-    with open(out_folder+f"{ticker}-LLM-analysis.txt", "w", encoding="utf-8") as out:
-        out.write(result.content)
+    # shutil.rmtree(out_folder, ignore_errors=True)
+    # os.makedirs(out_folder)
+    # with open(out_folder+f"{ticker}-LLM-analysis.txt", "w", encoding="utf-8") as out:
+        # out.write(result.content)
     return result.content
 
-
+def run_diversified_analysis(ticker, otherTickers, output_dir='static/plots'):
+    os.makedirs(output_dir, exist_ok=True)
+    plots_info = []
+    tickers=[]
+    tickers.append(ticker)
+    tickers.extend(otherTickers.split(','))
+    print('tickers is')
+    print(tickers)
+    portfolio_value, ticker_value = simulate_diversified_portfolio(tickers)
+    diversified_path = os.path.join(output_dir, f'{ticker}_diversified_portfolio.png')
+    plot_diversified_portfolio(portfolio_value, ticker_value, tickers, diversified_path)
+    plots_info.append((f'{ticker}_diversified_portfolio.png', f'Compares a diversified portfolio ({ticker}, {tickers[1]}, {tickers[2]}, {'' if len(tickers)==3 else tickers[3]}) to {ticker} alone.'))
+    return plots_info
 
 def run_full_analysis(ticker, cik, root_path, output_dir='static/plots'):
     INDEX_FILES_DIR = os.path.join(root_path, 'static', 'index_files')
@@ -691,9 +702,9 @@ def run_full_analysis(ticker, cik, root_path, output_dir='static/plots'):
     # plots_info.append((f'{ticker}_dca.png', dca_explanation))
 
     # 6. Diversified portfolio simulation
-    tickers = [ticker, 'AAPL' if ticker!='AAPL' else 'NVDA', 'FDX' if ticker!='FDX' else 'HD']
-    portfolio_value, ticker_value = simulate_diversified_portfolio(tickers)
-    diversified_path = os.path.join(output_dir, f'{ticker}_diversified_portfolio.png')
+    # tickers = [ticker, 'AAPL' if ticker!='AAPL' else 'NVDA', 'FDX' if ticker!='FDX' else 'HD']
+    # portfolio_value, ticker_value = simulate_diversified_portfolio(tickers)
+    # diversified_path = os.path.join(output_dir, f'{ticker}_diversified_portfolio.png')
     # plot_diversified_portfolio(portfolio_value, ticker_value, ticker, diversified_path)
     # plots_info.append((f'{ticker}_diversified_portfolio.png', f'Compares a diversified portfolio ({ticker}, {tickers[1]}, {tickers[2]}) to {ticker} alone.'))
     # diversified_explanation_prompt = (

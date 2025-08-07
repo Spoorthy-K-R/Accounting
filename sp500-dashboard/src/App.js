@@ -7,8 +7,14 @@ function App() {
   const [plots, setPlots] = useState([]);
   const [analysis, setAnalysis] = useState([]);
 
-  const [isLoading, setIsLoading] = useState(false); // New state for loading indicator
-  const [error, setError] = useState(null); // New state for error messages
+  const [isLoading, setIsLoading] = useState(false); 
+  const [error, setError] = useState(null); 
+
+  const [showDiversifiedInput, setShowDiversifiedInput] = useState(false); 
+  const [otherTickersInput, setOtherTickersInput] = useState(''); 
+  const [diversifiedPlot, setDiversifiedPlot] = useState(null); 
+  const [isDiversifiedLoading, setIsDiversifiedLoading] = useState(false); 
+  const [diversifiedError, setDiversifiedError] = useState(null); 
 
 
   // const FLASK_BACKEND_URL = 'https://financial-data-analysis.onrender.com';
@@ -28,8 +34,11 @@ function App() {
     const newSelection = e.target.value;
     setSelected(newSelection);
     setPlots([]); 
-    // setAnalysis(null);
+    setAnalysis('');
     setError(null);
+    setDiversifiedPlot(null); 
+    setDiversifiedError(null); 
+    setShowDiversifiedInput(false);
     
     if (!newSelection) { 
       return; 
@@ -48,6 +57,48 @@ function App() {
     })
     .finally(() => {
       setIsLoading(false); // Stop loading regardless of success or failure
+    });
+  };
+
+  const handleDiversifiedAnalysisSubmit = () => {
+    if (!selected) {
+      setDiversifiedError("Please select a primary company first.");
+      return;
+    }
+    const otherTickersArray = otherTickersInput.split(',').map(ticker => ticker.trim().toUpperCase()).filter(t => t);
+    if (otherTickersArray.length === 0) {
+      setDiversifiedError("Please enter 2-3 other ticker symbols.");
+      return;
+    }
+    if (otherTickersArray.length > 3) {
+      setDiversifiedError("Please enter a maximum of 3 other ticker symbols.");
+      return;
+    }
+
+    setIsDiversifiedLoading(true);
+    setDiversifiedError(null);
+    setDiversifiedPlot(null);
+
+    console.log('otherTickers')
+    console.log(otherTickersArray)
+    console.log('plots')
+    console.log(plots)
+
+    axios.post(`${FLASK_BACKEND_URL}/api/diversified-analysis`, {
+      primaryTicker: selected,
+      otherTickers: otherTickersArray.join(',') // Send as comma-separated string
+    })
+    .then(res => {
+      setDiversifiedPlot(res.data.plot);
+      console.log('diverse plot')
+      console.log(diversifiedPlot); // Assuming backend returns a single plot object
+    })
+    .catch(err => {
+      console.error("Error fetching diversified analysis:", err);
+      setDiversifiedError(`Failed to load diversified analysis: ${err.response?.data?.error || err.message}`);
+    })
+    .finally(() => {
+      setIsDiversifiedLoading(false);
     });
   };
 
@@ -76,7 +127,72 @@ function App() {
           ))}
         </select>
         {/* <button onChange={handleAnalysis}>Display LLM Analysis</button> */}
+        {selected && ( // Only show button if a company is selected
+          <button 
+            onClick={() => setShowDiversifiedInput(!showDiversifiedInput)}
+            style={{ 
+              padding: '10px 15px', 
+              fontSize: '16px', 
+              borderRadius: '5px', 
+              border: 'none', 
+              backgroundColor: '#4CAF50', 
+              color: 'white', 
+              cursor: 'pointer',
+              transition: 'background-color 0.3s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#45a049'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
+          >
+            {showDiversifiedInput ? 'Hide Diversified Input' : 'Diversified Analysis'}
+          </button>
+        )}
       </div>
+
+      {showDiversifiedInput && selected && (
+        <div style={{ 
+          border: '1px solid #b3e0ff', 
+          borderRadius: '8px', 
+          padding: '20px', 
+          marginBottom: '30px', 
+          backgroundColor: '#e6f7ff', 
+          textAlign: 'left',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '15px'
+        }}>
+          <h3 style={{ color: '#0056b3', marginBottom: '10px' }}>Compare {selected} with:</h3>
+          <input
+            type="text"
+            placeholder="Enter 2-3 other tickers (e.g., AAPL, MSFT)"
+            value={otherTickersInput}
+            onChange={(e) => setOtherTickersInput(e.target.value)}
+            style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc', width: '80%' }}
+          />
+          <button
+            onClick={handleDiversifiedAnalysisSubmit}
+            disabled={isDiversifiedLoading || !otherTickersInput.trim()} // Disable if loading or input is empty
+            style={{ 
+              padding: '10px 20px', 
+              fontSize: '16px', 
+              borderRadius: '5px', 
+              border: 'none', 
+              backgroundColor: '#007bff', 
+              color: 'white', 
+              cursor: 'pointer',
+              opacity: isDiversifiedLoading || !otherTickersInput.trim() ? 0.6 : 1,
+              transition: 'background-color 0.3s ease, opacity 0.3s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = isDiversifiedLoading || !otherTickersInput.trim() ? '#007bff' : '#0056b3'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#007bff'}
+          >
+            {isDiversifiedLoading ? 'Generating...' : 'Generate Diversified Plot'}
+          </button>
+          
+          {isDiversifiedLoading && <p style={{ color: '#555' }}>Loading diversified analysis...</p>}
+          {diversifiedError && <p style={{ color: 'red' }}>Error: {diversifiedError}</p>}
+        </div>
+      )}
 
       {error && (
         <div style={{ color: 'red', border: '1px solid red', padding: '10px', borderRadius: '5px', marginBottom: '20px' }}>
@@ -91,13 +207,13 @@ function App() {
         </div>
       )}
 
-      {!isLoading && !error && plots.length === 0 && selected && (
+      {!isLoading && !error && plots.length === 0 && analysis=='' && selected && !isDiversifiedLoading && !diversifiedError && (
         <div style={{ padding: '20px', color: '#777' }}>
           <p>No analysis available for {selected} or data is still processing.</p>
         </div>
       )}
 
-      {!isLoading && !error && plots.length === 0 && !selected && (
+      {!isLoading && !error && plots.length === 0 && !selected && !isDiversifiedLoading && !diversifiedError && (
         <div style={{ padding: '20px', color: '#777' }}>
           <p>Select a company from the dropdown to view its stock analysis dashboard.</p>
         </div>
@@ -106,6 +222,14 @@ function App() {
       {!isLoading && !error && plots.length > 0 && (
         <div style={{ marginTop: '20px' }}>
         <h2>Analysis Results for {selected}</h2>
+
+        {showDiversifiedInput && diversifiedPlot.length>0 && (
+            <div style={{ border: '1px solid #ccf', borderRadius: '8px', padding: '15px', marginBottom: '25px', backgroundColor: '#f0f4ff' }}>
+              <h3 style={{ color: '#003366', marginBottom: '10px' }}>{diversifiedPlot[0].title}</h3>
+              <img src={`${FLASK_BACKEND_URL}${diversifiedPlot[0].url}`} alt={diversifiedPlot[0].title} style={{maxWidth: '100%', height: 'auto', borderRadius: '4px'}} />
+              <p style={{ fontSize: '0.95em', color: '#444', marginTop: '15px', lineHeight: '1.4' }}>{diversifiedPlot[0].explanation}</p>
+            </div>
+        )}
 
         {plots.map(plot => (
             <div key={plot.title} style={{ border: '1px solid #eee', borderRadius: '8px', padding: '15px', marginBottom: '25px', backgroundColor: '#f9f9f9' }}>
@@ -117,7 +241,7 @@ function App() {
         
         {analysis.length>0 && (
         <div>
-          <h2>Analysis Results (This Analysis is AI generated)</h2>
+          <h2>Analysis Results (This Analysis is an AI generated financial analysis using income statements, cashflow statements and balance sheet of the company obtained from EDGAR SEC filings)</h2>
           <p style={{fontSize: '1.1rem', textAlign: 'justify'}}>{analysis}</p>
         </div>
         )}

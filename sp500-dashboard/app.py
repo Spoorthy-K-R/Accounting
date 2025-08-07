@@ -2,6 +2,7 @@ from flask import Flask, jsonify, send_from_directory, request
 import pandas as pd
 import os
 from backend_analysis import run_full_analysis
+from backend_analysis import run_diversified_analysis
 from backend_analysis import analyse_EDGAR
 from flask_cors import CORS
 
@@ -22,6 +23,25 @@ def get_LLM_analysis(ticker):
     cik = sp500.loc[sp500['tic']==ticker, 'cik']
     text = analyse_EDGAR(ticker, cik, app.root_path)
     return jsonify(text)
+
+@app.route('/api/diversified-analysis', methods=['POST'])
+def get_diversified_analysis():
+    primaryticker = request.json['primaryTicker']
+    otherTickers = request.json['otherTickers']
+    print('primaryTicker')
+    print(primaryticker)
+    print('otherTickers')
+    print(otherTickers)
+    plot_info = run_diversified_analysis(primaryticker, otherTickers)
+    plots = [
+            {
+                'title': os.path.splitext(filename)[0].replace(f'{primaryticker}_', '').replace('_', ' ').title(),
+                'url': f'/static/plots/{filename}',
+                'explanation': explanation
+            }
+            for filename, explanation in plot_info
+        ]
+    return jsonify({'plot': plots})
 
 @app.route('/api/analysis/<ticker>')
 def get_analysis(ticker):

@@ -207,7 +207,7 @@ function App() {
         </div>
       )}
 
-      {!isLoading && !error && plots.length === 0 && analysis=='' && selected && !isDiversifiedLoading && !diversifiedError && (
+      {!isLoading && !error && plots.length === 0 && analysis==='' && selected && !isDiversifiedLoading && !diversifiedError && (
         <div style={{ padding: '20px', color: '#777' }}>
           <p>No analysis available for {selected} or data is still processing.</p>
         </div>

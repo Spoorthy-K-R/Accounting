@@ -200,6 +200,20 @@ function App() {
         </div>
       )}
 
+      {!isDiversifiedLoading && diversifiedPlot && (
+        <div style={{ marginTop: '20px' }}>
+        <h2>Diversified Analysis Results for {selected}</h2>
+
+        {showDiversifiedInput && diversifiedPlot.length>0 && (
+            <div style={{ border: '1px solid #ccf', borderRadius: '8px', padding: '15px', marginBottom: '25px', backgroundColor: '#f0f4ff' }}>
+              <h3 style={{ color: '#003366', marginBottom: '10px' }}>{diversifiedPlot[0].title}</h3>
+              <img src={`${FLASK_BACKEND_URL}${diversifiedPlot[0].url}`} alt={diversifiedPlot[0].title} style={{maxWidth: '100%', height: 'auto', borderRadius: '4px'}} />
+              <p style={{ fontSize: '0.95em', color: '#444', marginTop: '15px', lineHeight: '1.4' }}>{diversifiedPlot[0].explanation}</p>
+            </div>
+        )}
+        </div>
+      )};
+
       {isLoading && (
         <div style={{ padding: '20px', color: '#555' }}>
           <p>Loading analysis for {selected}... This may take a moment due to data fetching and LLM processing.</p>
@@ -215,21 +229,22 @@ function App() {
 
       {!isLoading && !error && plots.length === 0 && !selected && !isDiversifiedLoading && !diversifiedError && (
         <div style={{ padding: '20px', color: '#777' }}>
-          <p>Select a company from the dropdown to view its stock analysis dashboard.</p>
+          <p>Select a company from the dropdown to view its stock analysis dashboard</p>
         </div>
       )}
+        
 
       {!isLoading && !error && plots.length > 0 && (
         <div style={{ marginTop: '20px' }}>
         <h2>Analysis Results for {selected}</h2>
 
-        {showDiversifiedInput && diversifiedPlot.length>0 && (
+        {/* {showDiversifiedInput && diversifiedPlot.length>0 && (
             <div style={{ border: '1px solid #ccf', borderRadius: '8px', padding: '15px', marginBottom: '25px', backgroundColor: '#f0f4ff' }}>
               <h3 style={{ color: '#003366', marginBottom: '10px' }}>{diversifiedPlot[0].title}</h3>
               <img src={`${FLASK_BACKEND_URL}${diversifiedPlot[0].url}`} alt={diversifiedPlot[0].title} style={{maxWidth: '100%', height: 'auto', borderRadius: '4px'}} />
               <p style={{ fontSize: '0.95em', color: '#444', marginTop: '15px', lineHeight: '1.4' }}>{diversifiedPlot[0].explanation}</p>
             </div>
-        )}
+        )} */}
 
         {plots.map(plot => (
             <div key={plot.title} style={{ border: '1px solid #eee', borderRadius: '8px', padding: '15px', marginBottom: '25px', backgroundColor: '#f9f9f9' }}>

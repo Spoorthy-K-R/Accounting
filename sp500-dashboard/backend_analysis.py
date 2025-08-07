@@ -376,6 +376,7 @@ def analyse_EDGAR(ticker, cik, root_path):
     for input_file in os.listdir(folder_name):
         if True:
             print(folder_name+'/'+input_file)
+            file_path=folder_name+'/'+input_file
             year = input_file.split('-')[1]
 
             #######new method of extracting here###########

@@ -102,14 +102,14 @@ function App() {
     });
   };
 
-  const handleAnalysis = (e) => {
-    console.log('hi')
-    axios.get(`${FLASK_BACKEND_URL}/api/analysis/LLM/${selected}`)
-    .then(res => {
-      console.log('here atleast')
-      setAnalysis(res.data)
-    })
-  }
+  // const handleAnalysis = (e) => {
+  //   console.log('hi')
+  //   axios.get(`${FLASK_BACKEND_URL}/api/analysis/LLM/${selected}`)
+  //   .then(res => {
+  //     console.log('here atleast')
+  //     setAnalysis(res.data)
+  //   })
+  // }
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
